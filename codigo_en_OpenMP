@@ -1,0 +1,118 @@
+#include <stdio.h>
+#include <opencv2/opencv.hpp>
+#include <omp.h>
+
+int main()
+{
+    // Cargar la imagen en escala de grises
+    cv::Mat image = cv::imread("fig-3-2x.jpg", cv::IMREAD_GRAYSCALE);
+    if (image.empty())
+    {
+        printf("Error al cargar la imagen.\n");
+        return -1;
+    }
+
+    // Definir los kernels
+    float kernel_class_1[3][3] = {
+        {0, -1, 0},
+        {-1, 4, -1},
+        {0, -1, 0}};
+
+    float kernel_class_2[3][3] = {
+        {1, 2, 1},
+        {0, 0, 0},
+        {-1, -2, -1}};
+
+    float kernel_class_3[3][3] = {
+        {1, 0, -1},
+        {2, 0, -2},
+        {1, 0, -1}};
+    float kernel_square_3x3[3][3] = {
+        {1, 1, 1},
+        {1, 1, 1},
+        {1, 1, 1}};
+
+    float kernel_edge_3x3[3][3] = {
+        {1, 0, -1},
+        {0, 0, 0},
+        {-1, 0, 1}};
+
+    float kernel_square_5x5[5][5] = {
+        {1, 1, 1, 1, 1},
+        {1, 1, 1, 1, 1},
+        {1, 1, 1, 1, 1},
+        {1, 1, 1, 1, 1},
+        {1, 1, 1, 1, 1}};
+
+    float kernel_edge_5x5[5][5] = {
+        {2, 1, 0, -1, -2},
+        {1, 1, 0, -1, -1},
+        {0, 0, 0, 0, 0},
+        {-1, -1, 0, 1, 1},
+        {-2, -1, 0, 1, 2}};
+    float kernel_sobel_vertical[3][3] = {
+        {-1, 0, 1},
+        {-2, 0, 2},
+        {-1, 0, 1}};
+
+    float kernel_sobel_horizontal[3][3] = {
+        {1, 2, 1},
+        {0, 0, 0},
+        {-1, -2, -1}};
+
+    float kernel_sobel_vertical[3][3] = {
+        {-1, 0, 1},
+        {-2, 0, 2},
+        {-1, 0, 1}};
+
+    float kernel_sobel_horizontal[3][3] = {
+        {1, 2, 1},
+        {0, 0, 0},
+        {-1, -2, -1}};
+
+    // ... Definir el resto de los kernels aquí ...
+
+    // Crear una matriz para la imagen filtrada del mismo tamaño y tipo que la imagen original
+    cv::Mat filtered_image = cv::Mat::zeros(image.size(), image.type());
+
+    // Paralelizar el bucle que aplica el kernel a la imagen
+#pragma omp parallel for collapse(2)
+    for (int y = 1; y < image.rows - 1; y++)
+    {
+        for (int x = 1; x < image.cols - 1; x++)
+        {
+            float sum = 0.0;
+            // Aplicar el kernel a la vecindad del píxel (x, y)
+            for (int ky = -1; ky <= 1; ky++)
+            {
+                for (int kx = -1; kx <= 1; kx++)
+                {
+                    int px = x + kx;
+                    int py = y + ky;
+                    sum += kernel_class_1[ky + 1][kx + 1] * (float)(image.at<uchar>(py, px));
+                }
+            }
+            // Asignar el valor calculado al píxel de la imagen filtrada
+            filtered_image.at<uchar>(y, x) = cv::saturate_cast<uchar>(sum);
+        }
+    }
+
+    // Calcular las estadísticas de la imagen filtrada
+    double min_val, max_val;
+    cv::minMaxLoc(filtered_image, &min_val, &max_val);
+    cv::Scalar mean_val = cv::mean(filtered_image);
+    cv::Scalar std_dev;
+    cv::meanStdDev(filtered_image, mean_val, std_dev);
+
+    // Imprimir las estadísticas
+    printf("Dimensiones: %dx%d\n", filtered_image.cols, filtered_image.rows);
+    printf("Valor mínimo: %f\n", min_val);
+    printf("Valor máximo: %f\n", max_val);
+    printf("Valor medio: %f\n", mean_val[0]);
+    printf("Desviación estándar: %f\n", std_dev[0]);
+
+    // Guardar o mostrar la imagen filtrada
+    cv::imwrite("filtered_image.jpg", filtered_image);
+
+    return 0;
+}

@@ -1,0 +1,51 @@
+#include <opencv2/opencv.hpp>
+#include <stdio.h>
+#include <stdlib.h>
+
+int main() {
+    // Cargar la imagen en escala de grises
+    cv::Mat image = cv::imread("fig-3-2x.jpg", cv::IMREAD_GRAYSCALE);
+    if (image.empty()) {
+        printf("Error al cargar la imagen.\n");
+        return -1;
+    }
+
+    // Definir los kernels
+    float kernel_class_1[3][3] = {
+        { 0, -1,  0},
+        {-1,  4, -1},
+        { 0, -1,  0}
+    };
+
+    // ... Definir el resto de los kernels ...
+
+    // Crear una matriz para la imagen filtrada
+    cv::Mat filtered_image_class_1;
+
+    // Convertir el kernel a una matriz de OpenCV
+    cv::Mat kernel_mat_class_1(3, 3, CV_32F, kernel_class_1);
+
+    // Aplicar el kernel a la imagen
+    cv::filter2D(image, filtered_image_class_1, -1, kernel_mat_class_1);
+
+    // Calcular las estadísticas solicitadas
+    double min_val, max_val, mean_val, std_dev_val;
+    cv::minMaxLoc(filtered_image_class_1, &min_val, &max_val);
+    cv::Scalar mean_scalar = cv::mean(filtered_image_class_1);
+    mean_val = mean_scalar[0];
+    cv::Scalar std_dev_scalar;
+    cv::meanStdDev(filtered_image_class_1, mean_scalar, std_dev_scalar);
+    std_dev_val = std_dev_scalar[0];
+
+    // Mostrar las estadísticas
+    printf("Dimensiones: %dx%d\n", filtered_image_class_1.cols, filtered_image_class_1.rows);
+    printf("Valor mínimo: %f\n", min_val);
+    printf("Valor máximo: %f\n", max_val);
+    printf("Valor medio: %f\n", mean_val);
+    printf("Desviación estándar: %f\n", std_dev_val);
+
+    // Guardar la imagen filtrada
+    cv::imwrite("filtered_image_class_1.jpg", filtered_image_class_1);
+
+    return 0;
+}
