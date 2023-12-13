@@ -8,7 +8,6 @@ from os import listdir
 from os.path import isfile, join
 from scipy.signal import convolve2d
 import re
-import my_filter  # Importar el módulo Cython
 
 
 
