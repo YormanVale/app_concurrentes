@@ -8,7 +8,7 @@ def descargar_img(api_key, tema, cantidad, inicio, hilo_id):
     headers = {'Authorization': api_key}
     for i in range(inicio, inicio + cantidad):
         try:
-            params = {'query': tema, 'per_page': 80, 'page': i}
+            params = {'query': tema, 'per_page': 50, 'page': i}
             response = requests.get('https://api.pexels.com/v1/search', headers=headers, params=params)
             if response.status_code == 200:
                 data = response.json()

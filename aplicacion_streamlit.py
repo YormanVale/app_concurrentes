@@ -10,8 +10,6 @@ from scipy.signal import convolve2d
 import re
 
 
-
-
 def apply_kernel_to_section(image_section, kernel):
     # Aplica el kernel a la sección de la imagen y retorna el resultado
     filtered_section = convolve2d(image_section, kernel, mode='same', boundary='wrap')
